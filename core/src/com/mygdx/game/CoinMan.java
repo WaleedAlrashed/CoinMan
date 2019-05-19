@@ -53,6 +53,7 @@ public class CoinMan extends ApplicationAdapter {
 
     //game over dizzy dude
     Texture dizzyDude;
+    BitmapFont gameOverFont;
 
 	@Override
 	public void create () {
@@ -75,6 +76,10 @@ public class CoinMan extends ApplicationAdapter {
         font = new BitmapFont();
         font.setColor(Color.WHITE);
         font.getData().setScale(3);
+
+        gameOverFont = new BitmapFont();
+        gameOverFont.setColor(Color.RED);
+        gameOverFont.getData().setScale(3);
 
         dizzyDude = new Texture("dizzy-1.png");
 
@@ -198,6 +203,9 @@ public class CoinMan extends ApplicationAdapter {
         if(gameState ==2){
             //game over , draw dizzy dude in the same place
             batch.draw(dizzyDude,Gdx.graphics.getWidth() / 2 - man[manState].getWidth() / 2, manY);
+            gameOverFont.draw(batch,"GAME OVER!",Gdx.graphics.getWidth()/4-gameOverFont.getScaleX(),Gdx.graphics.getHeight()/2);
+
+            //gameOverFont.draw(batch,"GAME OVER!",300,500);
         }else {
             batch.draw(man[manState], Gdx.graphics.getWidth() / 2 - man[manState].getWidth() / 2, manY);
         }
