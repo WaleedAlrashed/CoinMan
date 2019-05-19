@@ -2,8 +2,10 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
@@ -18,7 +20,6 @@ public class CoinMan extends ApplicationAdapter {
 	Texture background;
 	//man images
 	Texture[] man;
-
 	Rectangle manRectangle;
 	//get the man state on the screen
 	int manState = 0;
@@ -45,6 +46,13 @@ public class CoinMan extends ApplicationAdapter {
     Texture bomb;
     int bombCount;
 
+    //score && game state
+    BitmapFont font;
+    int score = 0;
+    int gameState =0;
+
+    //game over dizzy dude
+    Texture dizzyDude;
 
 	@Override
 	public void create () {
@@ -61,9 +69,15 @@ public class CoinMan extends ApplicationAdapter {
 
 		coin = new Texture("coin.png");
         random = new Random();
-
         //bomb init
         bomb = new Texture("bomb.png");
+
+        font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        font.getData().setScale(3);
+
+        dizzyDude = new Texture("dizzy-1.png");
+
 	}
 
 	public void makeCoin(){
@@ -121,53 +135,94 @@ public class CoinMan extends ApplicationAdapter {
 	    batch.begin();
 	    //drawing stuff on the screen
 	    batch.draw(background,0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
-        //coins
-	    placeCoins();
-		//bombs
-		placeBombs();
 
-	    if(Gdx.input.justTouched()){
-	    	velocity = -10;
-		}
-	    if(pause <8){
-	        pause++;
-        }else {
+	    //game state
+        if(gameState ==1){
+            //GAME IS LIVE
+            //coins
+            placeCoins();
+            //bombs
+            placeBombs();
 
-	        pause=0;
-            if (manState < 3) {
-                manState++;
-            } else {
-                manState = 0;
+            if(Gdx.input.justTouched()){
+                velocity = -10;
             }
-        }//pause states else
+            if(pause <8){
+                pause++;
+            }else {
 
-		velocity +=gravity;
+                pause=0;
+                if (manState < 3) {
+                    manState++;
+                } else {
+                    manState = 0;
+                }
+            }//pause states else
 
-	    manY -= velocity;
+            velocity +=gravity;
 
-	    if(manY <=0){
-	    	manY = 0;
-		}
+            manY -= velocity;
+
+            if(manY <=0){
+                manY = 0;
+            }
+        }else if(gameState ==0){
+            //Waiting to start
+            if(Gdx.input.justTouched()){
+                gameState=1;
+            }
+        }else if(gameState == 2){
+            //game over
+            if(Gdx.input.justTouched()){
+                gameState=1;
+                manY = Gdx.graphics.getHeight()/2;
+                score =0;
+                velocity = 0;
+                coinXs.clear();
+                coinYs.clear();
+                coinRectangles.clear();
+                coinCount=0;
+
+                bombXs.clear();
+                bombYs.clear();
+                bombRectangles.clear();
+                bombCount=0;
+            }
+        }
+
+
+
 	    //drawing the dude in the middle of the screen by dividing the width and height by 2
 	    //batch.draw(man[0],0,0,Gdx.graphics.getWidth()/2,Gdx.graphics.getHeight()/2);
 		//now as you saw before he's not completley  centered so we're gonna minus his width
-		batch.draw(man[manState],Gdx.graphics.getWidth()/2 - man[manState].getWidth()/2,manY);
-
+        if(gameState ==2){
+            //game over , draw dizzy dude in the same place
+            batch.draw(dizzyDude,Gdx.graphics.getWidth() / 2 - man[manState].getWidth() / 2, manY);
+        }else {
+            batch.draw(man[manState], Gdx.graphics.getWidth() / 2 - man[manState].getWidth() / 2, manY);
+        }
 	    manRectangle = new Rectangle(Gdx.graphics.getWidth()/2 - man[manState].getWidth()/2,manY,man[manState].getWidth(),man[manState].getHeight());
 
 	    //is the man colliding with coins?
 	    for(int i=0;i<coinRectangles.size();i++){
 	    	if(Intersector.overlaps(manRectangle,coinRectangles.get(i))){
-	    		Gdx.app.log("Coin!","Collision!");
+	    		//Gdx.app.log("Coin!","Collision!");
+                score++;
+                coinRectangles.remove(i);
+                coinXs.remove(i);
+                coinYs.remove(i);
+                break;
 			}
 		}
 
 		//is the man colliding with bombs?
 		for(int i=0;i<bombRectangles.size();i++){
 			if(Intersector.overlaps(manRectangle,bombRectangles.get(i))){
-				Gdx.app.log("Bomb!","Collision!");
+				//Gdx.app.log("Bomb!","Collision!");
+                gameState = 2;
 			}
 		}
+		font.draw(batch,String.valueOf(score),100,200);
 
 	    batch.end();
 	}
