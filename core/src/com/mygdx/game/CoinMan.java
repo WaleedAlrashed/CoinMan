@@ -24,12 +24,20 @@ public class CoinMan extends ApplicationAdapter {
 	float velocity = 0;
 	int manY=0;
 
+    Random random;
 	//coin objects
 	ArrayList<Integer> coinXs = new ArrayList<Integer>();
 	ArrayList<Integer> coinYs = new ArrayList<Integer>();
 	Texture coin;
 	int coinCount;
-	Random random;
+
+
+	//bombs objects
+    ArrayList<Integer> bombXs = new ArrayList<Integer>();
+    ArrayList<Integer> bombYs = new ArrayList<Integer>();
+    Texture bomb;
+    int bombCount;
+
 
 	@Override
 	public void create () {
@@ -44,7 +52,10 @@ public class CoinMan extends ApplicationAdapter {
 		manY = Gdx.graphics.getHeight()/2;
 
 		coin = new Texture("coin.png");
-		random = new Random();
+        random = new Random();
+
+        //bomb init
+        bomb = new Texture("bomb.png");
 	}
 
 	public void makeCoin(){
@@ -52,26 +63,57 @@ public class CoinMan extends ApplicationAdapter {
 		float height = random.nextFloat() * Gdx.graphics.getHeight();
 		coinYs.add((int)height);
 		coinXs.add(Gdx.graphics.getWidth());
-
 	}
+
+	public void placeCoins(){
+        if(coinCount<100){
+            coinCount++;
+        }else{
+            coinCount=0;
+            makeCoin();
+        }
+
+        for(int i=0;i<coinXs.size();i++){
+            batch.draw(coin,coinXs.get(i),coinYs.get(i));
+            //move the coinX
+            coinXs.set(i,coinXs.get(i)-4);
+        }
+
+    }
+	public void makeBomb(){
+        //randomizing the bomb height
+        float height = random.nextFloat() * Gdx.graphics.getHeight();
+        bombYs.add((int)height);
+        bombXs.add(Gdx.graphics.getWidth());
+    }
+    //function to placebombs
+    public void placeBombs(){
+        if(bombCount<250){
+            bombCount++;
+        }else{
+            bombCount=0;
+            makeBomb();
+        }
+
+        for(int i=0;i<bombXs.size();i++){
+            batch.draw(bomb,bombXs.get(i),bombYs.get(i));
+            //move the bombX
+            //move bomb quicker
+            bombXs.set(i,bombXs.get(i)-6);
+        }
+
+    }
+
 	@Override
 	public void render () {
 	    batch.begin();
 	    //drawing stuff on the screen
 	    batch.draw(background,0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        //coins
+	    placeCoins();
+		//bombs
+		placeBombs();
 
-	    if(coinCount<100){
-	    	coinCount++;
-		}else{
-	    	coinCount=0;
-	    	makeCoin();
-		}
-
-	    for(int i=0;i<coinXs.size();i++){
-	    	batch.draw(coin,coinXs.get(i),coinYs.get(i));
-	    	//move the coinX
-	    	coinXs.set(i,coinXs.get(i)-4);
-		}
 	    if(Gdx.input.justTouched()){
 	    	velocity = -10;
 		}
